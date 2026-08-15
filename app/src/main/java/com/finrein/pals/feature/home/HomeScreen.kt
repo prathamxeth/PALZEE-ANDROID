@@ -12220,40 +12220,145 @@ fun VlogScreenContent(
                     .offset(y = 7.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Dropdown capsule button (width reduced by 5dp -> horizontal padding = 13.5.dp, height reduced by 3dp to 37.dp)
-                // For Vlog, show plain text in middle, else show capsule
-                if (pal.isVlog) {
+                if (selectedDayOffset != 0) {
                     val targetDate = remember(selectedDayOffset) {
                         activeLocalDate.minusDays(selectedDayOffset.toLong())
                     }
-                    val dayName = remember(targetDate) {
-                        targetDate.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.US)
+                    val pillDateText = remember(selectedDayOffset, targetDate) {
+                        when (selectedDayOffset) {
+                            1 -> "Yesterday"
+                            -1 -> "Tomorrow"
+                            else -> "${targetDate.dayOfMonth} ${targetDate.month.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.US)} ${targetDate.year}"
+                        }
                     }
+                    val pillBg = if (isDark) Color.White else Color(0xFF1E1E1E)
+                    val pillTextColor = if (isDark) Color.Black else Color.White
+
+                    Box(
+                        modifier = Modifier
+                            .offset(y = (-5).dp)
+                            .height(32.5.dp)
+                            .clip(RoundedCornerShape(16.25.dp))
+                            .background(pillBg)
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = pillDateText,
+                            fontFamily = BricolageVariableFontFamily,
+                            fontSize = 14.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = pillTextColor,
+                            maxLines = 1
+                        )
+                    }
+
+                    if (pal.isVlog && capturedVlogsPaths.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier.offset(y = 26.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            capturedVlogsPaths.forEachIndexed { index, _ ->
+                                val isSelected = index == selectedPageIndex
+                                Box(
+                                    modifier = Modifier
+                                        .size(17.dp)
+                                        .then(
+                                            if (isSelected) {
+                                                Modifier.border(1.dp, palTextLogoColor, CircleShape)
+                                            } else {
+                                                Modifier
+                                            }
+                                        )
+                                        .padding(1.5.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(14.dp)
+                                            .clip(CircleShape)
+                                            .background(selectedProfileColor),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.smile_small),
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .rotate(180f),
+                                            colorFilter = ColorFilter.tint(Color.Black)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    } else if (!pal.isVlog) {
+                        val distinctHours = remember(daySubmissions) {
+                            daySubmissions.map { it.getHourBucket() }.distinct().sorted()
+                        }
+                        if (distinctHours.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier.offset(y = 26.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                distinctHours.forEachIndexed { i, hour ->
+                                    val isSelected = hour == activeViewingHour
+                                    Box(
+                                        modifier = Modifier
+                                            .size(17.dp)
+                                            .then(
+                                                if (isSelected) {
+                                                    Modifier.border(1.dp, palTextLogoColor, CircleShape)
+                                                } else {
+                                                    Modifier
+                                                }
+                                            )
+                                            .padding(1.5.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(14.dp)
+                                                .clip(CircleShape)
+                                                .background(selectedProfileColor),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Image(
+                                                painter = painterResource(id = R.drawable.smile_small),
+                                                contentDescription = "Smiley",
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .rotate(180f),
+                                                colorFilter = ColorFilter.tint(Color.Black)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (pal.isVlog) {
                     val screenWidthDp = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp.dp
                     Row(
                         modifier = Modifier
-                            .offset(y = (-5).dp) // offset so it aligns exactly at y = 2.dp (7 - 5 = 2.dp)
-                            .height(32.5.dp) // background pill height matches 32.5.dp
+                            .offset(y = (-5).dp)
+                            .height(32.5.dp)
                             .clip(RoundedCornerShape(16.25.dp))
                             .background(if (isDark) Color(0xFF1E1E1E) else Color(0xFFEBEBEB))
-                            .then(
-                                if (selectedDayOffset == 0) {
-                                    Modifier.clickable { onShowDropdownChange(true) }
-                                } else {
-                                    Modifier
-                                }
-                            )
+                            .clickable { onShowDropdownChange(true) }
                             .onGloballyPositioned { coordinates ->
                                 val localPos = coordinates.positionInRoot()
                                 capsuleLeftDp = with(density) { localPos.x.toDp() }
                             }
                             .widthIn(max = (screenWidthDp - 225.dp).coerceAtLeast(100.dp))
-                            .padding(horizontal = 12.dp),
+                            .padding(horizontal = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(1.5.dp)
+                        horizontalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = if (selectedDayOffset > 0) dayName else (if (showEdit && editName.isNotEmpty()) editName else pal.name),
+                            text = if (showEdit && editName.isNotEmpty()) editName else pal.name,
                             fontFamily = BricolageVariableFontFamily,
                             fontSize = vlogFontSize,
                             fontWeight = FontWeight.Bold,
@@ -12262,19 +12367,11 @@ fun VlogScreenContent(
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f, fill = false)
                         )
-                        if (selectedDayOffset == 0) {
-                            Icon(
-                                imageVector = Icons.Default.KeyboardArrowDown,
-                                contentDescription = "dropdown arrow",
-                                tint = headerIconTint,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
                     }
 
                     if (capturedVlogsPaths.isNotEmpty()) {
                         Row(
-                            modifier = Modifier.offset(y = 26.dp), // offset downwards below the vlog capsule
+                            modifier = Modifier.offset(y = 26.dp),
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -12314,26 +12411,14 @@ fun VlogScreenContent(
                         }
                     }
                 } else {
-                    val targetDate = remember(selectedDayOffset) {
-                        activeLocalDate.minusDays(selectedDayOffset.toLong())
-                    }
-                    val dayName = remember(targetDate) {
-                        targetDate.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.US)
-                    }
                     val screenWidthDp = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp.dp
                     Row(
                         modifier = Modifier
-                            .offset(y = -5.dp) // offset so it aligns exactly at y = 2.dp (7 - 5 = 2.dp)
-                            .height(32.5.dp) // background pill height matches 32.5.dp
+                            .offset(y = -5.dp)
+                            .height(32.5.dp)
                             .clip(RoundedCornerShape(16.25.dp))
                             .background(headerButtonBg)
-                            .then(
-                                if (selectedDayOffset == 0) {
-                                    Modifier.clickable { onShowDropdownChange(true) }
-                                } else {
-                                    Modifier
-                                }
-                            )
+                            .clickable { onShowDropdownChange(true) }
                             .onGloballyPositioned { coordinates ->
                                 val localPos = coordinates.positionInRoot()
                                 capsuleLeftDp = with(density) { localPos.x.toDp() }
@@ -12344,7 +12429,7 @@ fun VlogScreenContent(
                         horizontalArrangement = Arrangement.spacedBy(1.5.dp)
                     ) {
                         Text(
-                            text = if (selectedDayOffset > 0) dayName else (if (showEdit && editName.isNotEmpty()) editName else pal.name),
+                            text = if (showEdit && editName.isNotEmpty()) editName else pal.name,
                             fontFamily = BricolageVariableFontFamily,
                             fontSize = groupFontSize,
                             fontWeight = FontWeight.Bold,
@@ -12353,17 +12438,14 @@ fun VlogScreenContent(
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f, fill = false)
                         )
-                        if (selectedDayOffset == 0) {
-                            Icon(
-                                imageVector = Icons.Default.KeyboardArrowDown,
-                                contentDescription = "dropdown arrow",
-                                tint = headerIconTint,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = "dropdown arrow",
+                            tint = headerIconTint,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
 
-                    // Display only 1 emoji for 1 hour in pals group menu emoji count below pals group text
                     val distinctHours = remember(daySubmissions) {
                         daySubmissions.map { it.getHourBucket() }.distinct().sorted()
                     }
