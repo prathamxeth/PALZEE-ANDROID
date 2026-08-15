@@ -12231,12 +12231,12 @@ fun VlogScreenContent(
                             else -> "${targetDate.dayOfMonth} ${targetDate.month.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.US)} ${targetDate.year}"
                         }
                     }
-                    val pillBg = if (isDark) Color.White else Color(0xFF1E1E1E)
-                    val pillTextColor = if (isDark) Color.Black else Color.White
+                    val pillBg = if (isDark) Color(0xFF1E1E1E) else Color(0xFFEBEBEB)
+                    val pillTextColor = if (isDark) Color.White else Color.Black
 
                     Box(
                         modifier = Modifier
-                            .offset(y = (-5).dp)
+                            .offset(y = 0.dp)
                             .height(32.5.dp)
                             .clip(RoundedCornerShape(16.25.dp))
                             .background(pillBg)
@@ -12255,7 +12255,7 @@ fun VlogScreenContent(
 
                     if (pal.isVlog && capturedVlogsPaths.isNotEmpty()) {
                         Row(
-                            modifier = Modifier.offset(y = 26.dp),
+                            modifier = Modifier.offset(y = 31.dp),
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -12299,7 +12299,7 @@ fun VlogScreenContent(
                         }
                         if (distinctHours.isNotEmpty()) {
                             Row(
-                                modifier = Modifier.offset(y = 26.dp),
+                                modifier = Modifier.offset(y = 31.dp),
                                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
