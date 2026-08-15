@@ -54,6 +54,7 @@ class ActivePalRepositoryImpl @Inject constructor(
                     filter {
                         eq("pal_code", palCode)
                     }
+                    order("created_at", io.github.jan.supabase.postgrest.query.Order.DESCENDING)
                 }
                 .decodeList<SubmissionDbItem>()
 
@@ -63,6 +64,7 @@ class ActivePalRepositoryImpl @Inject constructor(
                     filter {
                         eq("pal_code", palCode)
                     }
+                    order("created_at", io.github.jan.supabase.postgrest.query.Order.ASCENDING)
                 }
                 .decodeList<MessageDbItem>()
 

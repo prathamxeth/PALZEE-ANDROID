@@ -1742,6 +1742,7 @@ suspend fun ensureVideoCached(context: android.content.Context, videoPath: Strin
                     cacheFile.writeBytes(bytes)
                     palPrefs.edit().putString("local_path_$videoPath", cacheFile.absolutePath).apply()
                     vlogPrefs.edit().putString("local_path_$videoPath", cacheFile.absolutePath).apply()
+                    trimSavedPalsCache(context)
                     cacheFile.absolutePath
                 } catch (e: Exception) {
                     resolvedPath
@@ -1751,6 +1752,26 @@ suspend fun ensureVideoCached(context: android.content.Context, videoPath: Strin
         val cleanInputPath = if (videoPath.startsWith("file://")) videoPath.substring(7) else videoPath
         cleanInputPath
     }
+}
+
+private fun trimSavedPalsCache(context: android.content.Context) {
+    try {
+        val savedPalsDir = java.io.File(context.filesDir, "saved_pals")
+        if (!savedPalsDir.exists()) return
+        val files = savedPalsDir.listFiles() ?: return
+        var totalSize = files.sumOf { it.length() }
+        val maxSizeBytes = 1536L * 1024L * 1024L // 1.5 GB limit
+        if (totalSize > maxSizeBytes) {
+            val sortedFiles = files.sortedBy { it.lastModified() }
+            for (f in sortedFiles) {
+                if (totalSize <= (maxSizeBytes * 4) / 5) break // Trim down to 80% (1.2 GB)
+                val len = f.length()
+                if (f.delete()) {
+                    totalSize -= len
+                }
+            }
+        }
+    } catch (_: Exception) {}
 }
 
 private val sharedEffectExecutor = java.util.concurrent.Executors.newSingleThreadExecutor()
@@ -4000,7 +4021,10 @@ fun HomeScreen(
                         }
 
                         val dbSubs = com.finrein.pals.PalApplication.supabase.postgrest.from("submissions")
-                            .select { filter { eq("pal_code", pal.code) } }
+                            .select { 
+                                filter { eq("pal_code", pal.code) } 
+                                order("created_at", io.github.jan.supabase.postgrest.query.Order.DESCENDING)
+                            }
                             .decodeList<SubmissionDbItem>()
                         cacheSubmissionRotations(context, dbSubs)
                         
@@ -4690,7 +4714,7 @@ fun HomeScreen(
         lifecycleOwner.lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
             var channel: io.github.jan.supabase.realtime.RealtimeChannel? = null
             try {
-                channel = supabaseClient.channel("pals_realtime_channel")
+                channel = supabaseClient.channel("pals_realtime_user_$currentUserId")
                 
                 val palsFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") { table = "pals" }
                 val userPalsFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") { table = "user_pals" }
