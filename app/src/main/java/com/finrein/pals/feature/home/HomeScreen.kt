@@ -12455,7 +12455,7 @@ fun VlogScreenContent(
                             text = pillDateText,
                             fontFamily = GoogleSansFontFamily,
                             fontSize = 18.sp,
-                            fontWeight = FontWeight.Normal,
+                            fontWeight = FontWeight.SemiBold,
                             color = pillTextColor,
                             maxLines = 1
                         )
