@@ -12428,7 +12428,7 @@ fun VlogScreenContent(
                     visible = isDatePillVisible && selectedDayOffset != 0,
                     enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(200)) + androidx.compose.animation.scaleIn(initialScale = 0.9f),
                     exit = androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(300)) + androidx.compose.animation.scaleOut(targetScale = 0.9f),
-                    modifier = Modifier.offset(y = 10.dp)
+                    modifier = Modifier.offset(y = 5.dp)
                 ) {
                     val targetDate = remember(selectedDayOffset) {
                         activeLocalDate.minusDays(selectedDayOffset.toLong())
@@ -12445,16 +12445,16 @@ fun VlogScreenContent(
 
                     Box(
                         modifier = Modifier
-                            .height(30.dp)
-                            .clip(RoundedCornerShape(15.dp))
+                            .height(32.5.dp)
+                            .clip(RoundedCornerShape(16.25.dp))
                             .background(pillBg)
-                            .padding(horizontal = 15.dp),
+                            .padding(horizontal = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = pillDateText,
-                            fontFamily = BricolageVariableFontFamily,
-                            fontSize = 15.5.sp,
+                            fontFamily = GoogleSansFontFamily,
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.Normal,
                             color = pillTextColor,
                             maxLines = 1
