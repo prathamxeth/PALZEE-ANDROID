@@ -34,7 +34,9 @@ object NotificationHelper {
             }
         }
 
-        // Decode full-color app icon for notification drawer
+        val isDarkMode = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+        // Decode full-color app icon for notification drawer (natively resolves drawable / drawable-night)
         val coloredIconBitmap = try {
             BitmapFactory.decodeResource(context.resources, R.drawable.pal_colored_notification_logo)
                 ?: BitmapFactory.decodeResource(context.resources, R.drawable.pal_circular_logo)
@@ -42,8 +44,11 @@ object NotificationHelper {
             null
         }
 
+        val accentColor = if (isDarkMode) 0xFF121318.toInt() else 0xFF5218ED.toInt()
+
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_status_bar_silhouette) // Mandatory monochrome for status bar
+            .setColor(accentColor)
             .setAutoCancel(true)
 
         if (coloredIconBitmap != null) {
